@@ -1,13 +1,12 @@
-const { CustomerRepository } = require("../database");
+const { CustomerRepository } = require('../database');
 const {
   FormateData,
   GeneratePassword,
   GenerateSalt,
   GenerateSignature,
   ValidatePassword,
-} = require("../utils");
+} = require('../utils');
 
-// All Business logic will be here
 class CustomerService {
   constructor() {
     this.repository = new CustomerRepository();
@@ -29,7 +28,11 @@ class CustomerService {
           email: existingCustomer.email,
           _id: existingCustomer._id,
         });
-        return FormateData({ id: existingCustomer._id, role: existingCustomer.role, token  });
+        return FormateData({
+          id: existingCustomer._id,
+          token,
+          role: existingCustomer.role,
+        });
       }
     }
 
@@ -44,19 +47,30 @@ class CustomerService {
 
     let userPassword = await GeneratePassword(password, salt);
 
-    const existingCustomer = await this.repository.CreateCustomer({
+    const existingCustomer = await this.repository.FindCustomer({ email });
+
+    if (existingCustomer) return FormateData(null);
+
+    const newCustomer = await this.repository.CreateCustomer({
       email,
       password: userPassword,
       phone,
-      salt,
       role,
+      salt,
     });
 
     const token = await GenerateSignature({
       email: email,
-      _id: existingCustomer._id,
+      _id: newCustomer._id,
     });
-    return FormateData({ id: existingCustomer._id, role: existingCustomer.role, token });
+
+    return {
+      data: { id: newCustomer._id, token, role },
+      payload: {
+        event: 'CREATE_PROFILE',
+        data: { userId: newCustomer._id },
+      },
+    };
   }
 
   async AddNewAddress(_id, userInputs) {
@@ -81,7 +95,7 @@ class CustomerService {
   async DeleteProfile(userId) {
     const data = await this.repository.DeleteCustomerById(userId);
     const payload = {
-      event: "DELETE_PROFILE",
+      event: 'DELETE_PROFILE',
       data: { userId },
     };
     return { data, payload };

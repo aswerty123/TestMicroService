@@ -63,7 +63,7 @@ class ShoppingRepository {
       // create a new one
       return await WishlistModel.create({
         customerId,
-        wishlist: [{ _id: product_id }],
+        products: [{ _id: product_id }],
       });
     }
   }
@@ -120,6 +120,19 @@ class ShoppingRepository {
     return Promise.all([
       CartModel.findOneAndDelete({ customerId }),
       WishlistModel.findOneAndDelete({ customerId }),
+    ]);
+  }
+
+  async createProfileData(customerId) {
+    return Promise.all([
+      CartModel.create({
+        customerId,
+        items: [],
+      }),
+      WishlistModel.create({
+        customerId,
+        products: [],
+      }),
     ]);
   }
 }

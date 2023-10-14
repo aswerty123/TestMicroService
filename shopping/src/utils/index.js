@@ -1,13 +1,13 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const amqplib = require("amqplib");
-const { v4: uuid4 } = require("uuid");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const amqplib = require('amqplib');
+const { v4: uuid4 } = require('uuid');
 const {
   APP_SECRET,
   EXCHANGE_NAME,
   SHOPPING_SERVICE,
   MSG_QUEUE_URL,
-} = require("../config");
+} = require('../config');
 
 let amqplibConnection = null;
 
@@ -27,26 +27,27 @@ module.exports.ValidatePassword = async (
   return (await this.GeneratePassword(enteredPassword, salt)) === savedPassword;
 };
 
-(module.exports.GenerateSignature = async (payload) => {
-  return await jwt.sign(payload, APP_SECRET, { expiresIn: "90d" });
-}),
-  (module.exports.ValidateSignature = async (req) => {
-    const signature = req.get("Authorization");
+module.exports.GenerateSignature = async (payload) => {
+  return await jwt.sign(payload, APP_SECRET, { expiresIn: '90d' });
+};
 
-    if (signature) {
-      const payload = await jwt.verify(signature.split(" ")[1], APP_SECRET);
-      req.user = payload;
-      return true;
-    }
+module.exports.ValidateSignature = async (req) => {
+  const signature = req.get('Authorization');
 
-    return false;
-  });
+  if (signature) {
+    const payload = await jwt.verify(signature.split(' ')[1], APP_SECRET);
+    req.user = payload;
+    return true;
+  }
+
+  return false;
+};
 
 module.exports.FormateData = (data) => {
   if (data) {
     return { data };
   } else {
-    throw new Error("Data Not found!");
+    throw new Error('Data Not found!');
   }
 };
 
@@ -61,7 +62,7 @@ const getChannel = async () => {
 module.exports.CreateChannel = async () => {
   try {
     const channel = await getChannel();
-    await channel.assertQueue(EXCHANGE_NAME, "direct", { durable: true });
+    await channel.assertQueue(EXCHANGE_NAME, 'direct', { durable: true });
     return channel;
   } catch (err) {
     throw err;
@@ -70,13 +71,13 @@ module.exports.CreateChannel = async () => {
 
 module.exports.PublishMessage = (channel, service, msg) => {
   channel.publish(EXCHANGE_NAME, service, Buffer.from(msg));
-  console.log("Sent: ", msg);
+  console.log('Sent: ', msg);
 };
 
 module.exports.SubscribeMessage = async (channel, service) => {
-  await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
-  const q = await channel.assertQueue("", { exclusive: true });
-  console.log(` Waiting for messages in queue: ${q.queue}`);
+  await channel.assertExchange(EXCHANGE_NAME, 'direct', { durable: true });
+  const q = await channel.assertQueue('', { exclusive: true });
+  console.log(` Shopping Service waiting for messages in queue: ${q.queue}`);
 
   channel.bindQueue(q.queue, EXCHANGE_NAME, SHOPPING_SERVICE);
 
@@ -84,10 +85,10 @@ module.exports.SubscribeMessage = async (channel, service) => {
     q.queue,
     (msg) => {
       if (msg.content) {
-        console.log("the message is:", msg.content.toString());
+        console.log('Message is:', msg.content.toString());
         service.SubscribeEvents(msg.content.toString());
       }
-      console.log("[X] received");
+      console.log('Empty message received');
     },
     {
       noAck: true,
@@ -99,7 +100,7 @@ const requestData = async (RPC_QUEUE_NAME, requestPayload, uuid) => {
   try {
     const channel = await getChannel();
 
-    const q = await channel.assertQueue("", { exclusive: true });
+    const q = await channel.assertQueue('', { exclusive: true });
 
     channel.sendToQueue(
       RPC_QUEUE_NAME,
@@ -114,7 +115,7 @@ const requestData = async (RPC_QUEUE_NAME, requestPayload, uuid) => {
       // timeout n
       const timeout = setTimeout(() => {
         channel.close();
-        resolve("API could not fullfil the request!");
+        resolve('API could not fullfil the request!');
       }, 8000);
       channel.consume(
         q.queue,
@@ -123,7 +124,7 @@ const requestData = async (RPC_QUEUE_NAME, requestPayload, uuid) => {
             resolve(JSON.parse(msg.content.toString()));
             clearTimeout(timeout);
           } else {
-            reject("data Not found!");
+            reject('data Not found!');
           }
         },
         {
@@ -133,7 +134,7 @@ const requestData = async (RPC_QUEUE_NAME, requestPayload, uuid) => {
     });
   } catch (error) {
     console.log(error);
-    return "error";
+    return 'error';
   }
 };
 

@@ -1,8 +1,22 @@
-// which service it is
+// Service name
 describe("CustomerService", () => {
-  // Which function
+  // Function name
+  describe("CreateUser", () => {
+    // Test case
+    test("validate user inputs", () => {});
+
+    test("Validate response", async () => {});
+  });
+
   describe("SignIn", () => {
-    // Which Scenario we are testing
+    // Test case
+    test("validate user inputs", () => {});
+
+    test("Validate response", async () => {});
+  });
+
+  describe("GetUserDetail", () => {
+    // Test case
     test("validate user inputs", () => {});
 
     test("Validate response", async () => {});

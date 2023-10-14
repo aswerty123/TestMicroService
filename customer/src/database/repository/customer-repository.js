@@ -2,7 +2,7 @@ const { CustomerModel, AddressModel } = require("../models");
 
 //Dealing with data base operations
 class CustomerRepository {
-  async CreateCustomer({ email, password, phone, salt, role }) {
+  async CreateCustomer({ email, password, phone, role, salt }) {
     const customer = new CustomerModel({
       email,
       password,
@@ -45,10 +45,6 @@ class CustomerRepository {
       "address"
     );
     return existingCustomer;
-  }
-
-  async DeleteCustomerById(id) {
-    return CustomerModel.findByIdAndDelete(id);
   }
 
   async DeleteCustomerById(id) {

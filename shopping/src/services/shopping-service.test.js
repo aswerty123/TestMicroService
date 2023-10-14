@@ -1,8 +1,15 @@
-// which service it is
-describe("ShoppingService", () => {
-  // Which function
-  describe("PlaceOrder", () => {
-    // Which Scenario we are testing
+// Service name
+describe("ProductService", () => {
+  // Function name
+  describe("AddToCart", () => {
+    // Test case
+    test("validate user inputs", () => {});
+
+    test("Validate response", async () => {});
+  });
+
+  describe("MakePayment", () => {
+    // Test case
     test("validate user inputs", () => {});
 
     test("Validate response", async () => {});
